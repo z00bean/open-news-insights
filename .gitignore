@@ -71,6 +71,7 @@ logs/
 *.tmp
 *.temp
 
+# Other
 .kiro/
 .kiro*
 *.pptx
