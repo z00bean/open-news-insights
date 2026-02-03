@@ -201,6 +201,22 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+.DS_Store
+tests/
+.kiro/
+.kiro*
+*.pptx
+*.docx
+*.pdf
+*.pptx
+metadata.json
+*.metadata.json
+.vscode/
+test*
+.kiroignore
+*.docx
+*.pdf
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
