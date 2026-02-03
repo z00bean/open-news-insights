@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "open-news-insights"
+s3_bucket = ""  # Will be set during deployment
+s3_prefix = "open-news-insights"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Environment=dev"
+confirm_changeset = true
+
+[default.build.parameters]
+cached = true
+parallel = true

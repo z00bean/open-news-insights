@@ -1,0 +1,132 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Open News Insights - News article processing pipeline
+
+Globals:
+  Function:
+    Timeout: 300
+    MemorySize: 512
+    Runtime: python3.11
+    Environment:
+      Variables:
+        LOG_LEVEL: INFO
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment environment
+
+Resources:
+  OpenNewsInsightsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "open-news-insights-${Environment}"
+      CodeUri: src/
+      Handler: handler.lambda_handler
+      Description: Process news articles with optional AI enrichment
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Environment
+      Events:
+        ApiGateway:
+          Type: Api
+          Properties:
+            Path: /process
+            Method: post
+            RestApiId: !Ref OpenNewsInsightsApi
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - comprehend:DetectSentiment
+                - comprehend:DetectPiiEntities
+                - comprehend:DetectKeyPhrases
+                - comprehend:DetectDominantLanguage
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: '*'
+
+  OpenNewsInsightsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "open-news-insights-api-${Environment}"
+      StageName: !Ref Environment
+      Cors:
+        AllowMethods: "'POST, OPTIONS'"
+        AllowHeaders: "'Content-Type, X-Amz-Date, Authorization, X-Api-Key, X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+      DefinitionBody:
+        openapi: 3.0.1
+        info:
+          title: Open News Insights API
+          version: 1.0.0
+        paths:
+          /process:
+            post:
+              summary: Process news article
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      type: object
+                      required:
+                        - url
+                      properties:
+                        url:
+                          type: string
+                          format: uri
+                          description: News article URL to process
+                        features:
+                          type: object
+                          properties:
+                            llm_normalization:
+                              type: boolean
+                              default: false
+                            sentiment_analysis:
+                              type: boolean
+                              default: false
+                            pii_detection:
+                              type: boolean
+                              default: false
+                            topic_extraction:
+                              type: boolean
+                              default: false
+                            summarization:
+                              type: boolean
+                              default: false
+                            external_api_forwarding:
+                              type: boolean
+                              default: false
+              responses:
+                '200':
+                  description: Successful processing
+                  content:
+                    application/json:
+                      schema:
+                        type: object
+                '400':
+                  description: Bad request
+                '500':
+                  description: Internal server error
+
+Outputs:
+  OpenNewsInsightsApi:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${OpenNewsInsightsApi}.execute-api.${AWS::Region}.amazonaws.com/${Environment}/"
+    Export:
+      Name: !Sub "${AWS::StackName}-ApiUrl"
+
+  OpenNewsInsightsFunction:
+    Description: Lambda Function ARN
+    Value: !GetAtt OpenNewsInsightsFunction.Arn
+    Export:
+      Name: !Sub "${AWS::StackName}-FunctionArn"
