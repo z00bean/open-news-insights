@@ -197,6 +197,7 @@ Enable detailed logging by setting environment variable:
 export LOG_LEVEL=DEBUG
 ```
 
+<!-- 
 ## Contributing
 
 1. **Fork the repository**
@@ -212,7 +213,7 @@ export LOG_LEVEL=DEBUG
 - Follow PEP 8 style guidelines
 - Add docstrings to public functions
 - Update documentation for API changes
-
+-->
 
 
 ## Quick Start Example
