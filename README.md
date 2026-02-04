@@ -152,7 +152,7 @@ Content-Type: application/json
 
 Notes:
 
-- Cold start + Bedrock queueing may add +100–1200 ms
+- Bedrock queueing may add +100–1200 ms
 - Retries (scraping or API calls) can increase total latency to 4–6 seconds in worst-case scenarios
 
 ### Content Limits
