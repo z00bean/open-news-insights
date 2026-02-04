@@ -146,9 +146,14 @@ Content-Type: application/json
 
 ### Processing Times
 - **Basic extraction**: 200-500ms
-- **With AI normalization**: +300-800ms  
-- **With NLP analysis**: +200-600ms
-- **Complete pipeline**: 800-2000ms
+- **With AI normalization**: +300-1200ms  
+- **With NLP analysis**: +200-800ms
+- **Complete pipeline**: 800-2500ms
+
+Notes:
+
+- Cold start + Bedrock queueing may add +100–1200 ms
+- Retries (scraping or API calls) can increase total latency to 4–6 seconds in worst-case scenarios
 
 ### Content Limits
 - **Maximum article length**: 100KB raw HTML
