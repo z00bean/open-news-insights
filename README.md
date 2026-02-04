@@ -6,10 +6,10 @@ Open News Insights is a serverless AWS Lambda application that automatically ext
 
 ## What Does This Do?
 
-🔗 **Input**: Send a news article URL  
-🧹 **Process**: Extract clean content, remove ads/navigation  
-🤖 **Analyze**: Optional AI analysis (sentiment, topics, PII detection)  
-📊 **Output**: Structured JSON with clean text and insights  
+**Input**: Send a news article URL  
+**Process**: Extract clean content, remove ads/navigation  
+**Analyze**: Optional AI analysis (sentiment, topics, PII detection)  
+**Output**: Structured JSON with clean text and insights  
 
 ### Real-World Use Cases
 
@@ -23,11 +23,11 @@ Open News Insights is a serverless AWS Lambda application that automatically ext
 
 The system processes news articles through a configurable pipeline:
 
-1. **🌐 Web Scraping**: Fetches HTML from news websites with retry logic and bot avoidance
-2. **✂️ Content Extraction**: Removes navigation, ads, and boilerplate using intelligent selectors
-3. **🤖 AI Normalization**: (Optional) Uses AWS Bedrock Claude to further clean and normalize text
-4. **📈 NLP Analysis**: (Optional) AWS Comprehend provides sentiment, topics, and PII detection
-5. **📤 Result Delivery**: Formats and optionally forwards results to external APIs
+1. **Web Scraping**: Fetches HTML from news websites with retry logic and bot avoidance
+2. **Content Extraction**: Removes navigation, ads, and boilerplate using intelligent selectors
+3. **AI Normalization**: (Optional) Uses AWS Bedrock Claude to further clean and normalize text
+4. **NLP Analysis**: (Optional) AWS Comprehend provides sentiment, topics, and PII detection
+5. **Result Delivery**: Formats and optionally forwards results to external APIs
 
 ### Architecture Components
 
