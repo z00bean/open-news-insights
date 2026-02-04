@@ -42,36 +42,36 @@ The system processes news articles through a configurable pipeline:
 ```
 open-news-insights/
 ├── src/                           # Source code
-│   ├── handler.py                # 🚪 Lambda handler (main entry point)
-│   ├── scraper/                  # 🌐 News scraping components
+│   ├── handler.py                #   Lambda handler (main entry point)
+│   ├── scraper/                  #   News scraping components
 │   │   ├── scraper.py           #   Main scraper orchestrator
 │   │   ├── fetcher.py           #   HTTP client with retry logic
 │   │   ├── parser.py            #   HTML parsing and site detection
 │   │   └── extractor.py         #   Content extraction and cleanup
-│   ├── analysis/                 # 🤖 AI/ML processing
+│   ├── analysis/                 #   AI/ML processing
 │   │   ├── normalizer.py        #   AWS Bedrock text normalization
 │   │   ├── enricher.py          #   AWS Comprehend NLP analysis
 │   │   └── error_handler.py     #   AWS service error handling
-│   ├── postprocess/             # 📊 Result formatting
+│   ├── postprocess/             #   Result formatting
 │   │   └── formatter.py         #   Response formatting and API forwarding
-│   └── config/                  # ⚙️ Configuration management
+│   └── config/                  #   Configuration management
 │       ├── manager.py           #   Configuration loading and caching
 │       ├── models.py            #   Data models and validation
 │       ├── sites.py             #   Site-specific CSS selectors
 │       └── defaults.py          #   Default settings and fallbacks
-├── tests/                        # 🧪 Test suite
+├── tests/                        #   Test suite
 │   ├── unit/                    #   Component-level tests
 │   ├── integration/             #   End-to-end pipeline tests
 │   └── property/                #   Property-based tests (future)
-├── infra/                       # 🏗️ Infrastructure as code
+├── infra/                       #   Infrastructure as code
 │   ├── parameters/              #   Environment-specific configs
 │   │   ├── dev.json            #   Development settings
 │   │   ├── staging.json        #   Staging settings
 │   │   └── prod.json           #   Production settings
 │   └── deploy.sh               #   Deployment scripts
-├── template.yaml               # 📋 SAM template for AWS resources
-├── requirements.txt            # 📦 Python dependencies
-└── README.md                   # 📖 This file
+├── template.yaml               #   SAM template for AWS resources
+├── requirements.txt            #   Python dependencies
+└── README.md                   #   This file
 ```
 
 ## API Reference
@@ -160,9 +160,8 @@ Content-Type: application/json
 - **AWS service limits**: Per service quotas apply
 - **External API calls**: Configurable retry with exponential backoff
 
-## Troubleshooting
 
-### Common Issues
+## Common Issues
 
 **❌ "Invalid URL format"**
 ```json
@@ -209,15 +208,7 @@ export LOG_LEVEL=DEBUG
 - Add docstrings to public functions
 - Update documentation for API changes
 
-## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Support
-
-- **Issues**: [GitHub Issues](https://github.com/your-org/open-news-insights/issues)
-- **Documentation**: [Wiki](https://github.com/your-org/open-news-insights/wiki)
-- **Discussions**: [GitHub Discussions](https://github.com/your-org/open-news-insights/discussions)
 
 ## Quick Start Example
 
