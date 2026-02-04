@@ -166,16 +166,16 @@ Notes:
 - **External API calls**: Configurable retry with exponential backoff
 
 
-## Common Issues
+## ❌ Common Issues
 
-**❌ "Invalid URL format"**
+** "Invalid URL format"**
 ```json
 {"error": {"type": "VALIDATION_ERROR", "message": "Invalid URL format"}}
 ```
 - Ensure URL starts with `http://` or `https://`
 - Check for typos in the URL
 
-**❌ "Content extraction failed"**  
+** "Content extraction failed"**  
 ```json
 {"error": {"type": "PROCESSING_ERROR", "step": "extraction"}}
 ```
@@ -183,7 +183,7 @@ Notes:
 - Try with `llm_normalization: true` for better results
 - Check if site blocks automated requests
 
-**❌ "AWS service timeout"**
+** "AWS service timeout"**
 ```json
 {"error": {"type": "SERVICE_ERROR", "step": "enrichment"}}
 ```
