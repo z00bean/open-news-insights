@@ -15,6 +15,12 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from ..config.logging import get_logger
+from ..config.timeouts import get_timeout_manager
+
+
+logger = get_logger(__name__)
+
 
 @dataclass
 class FetchResult:
@@ -50,12 +56,14 @@ class HTTPFetcher:
         Initialize HTTP fetcher with configuration.
         
         Args:
-            timeout: Request timeout in seconds
+            timeout: Request timeout in seconds (deprecated, use timeout manager)
             max_retries: Maximum number of retry attempts
             backoff_factor: Multiplier for exponential backoff
             user_agent: Custom user agent string
         """
-        self.timeout = timeout
+        # Use timeout manager for proper timeout configuration
+        self.timeout_manager = get_timeout_manager()
+        self.timeout = timeout  # Keep for backward compatibility
         self.max_retries = max_retries
         self.backoff_factor = backoff_factor
         
@@ -144,8 +152,12 @@ class HTTPFetcher:
         attempts = 0
         last_error = None
         
+        logger.set_context(component="http_fetcher")
+        logger.info("Starting HTTP fetch", url=url, timeout=self.timeout, max_retries=self.max_retries)
+        
         # Validate URL
         if not url or not url.startswith(('http://', 'https://')):
+            logger.error("Invalid URL format", url=url)
             return FetchResult(
                 url=url,
                 content="",
@@ -156,28 +168,59 @@ class HTTPFetcher:
             )
         
         headers = self._get_headers(url)
+        logger.debug("HTTP headers prepared", headers=headers)
         
         for attempt in range(self.max_retries + 1):
             attempts = attempt + 1
+            attempt_start = time.time()
             
             try:
+                logger.debug(f"HTTP fetch attempt {attempts}/{self.max_retries + 1}", url=url)
+                
                 # Add random delay for bot avoidance (except first attempt)
                 if attempt > 0:
-                    self._add_random_delay()
+                    delay = random.uniform(0.5, 2.0)
+                    logger.debug("Adding bot avoidance delay", delay_seconds=delay)
+                    time.sleep(delay)
                 
-                # Make the request
-                response = self.session.get(
-                    url,
-                    headers=headers,
-                    timeout=self.timeout,
-                    allow_redirects=True
-                )
+                # Make the request with timeout
+                with logger.timed_operation(f"http_request_attempt_{attempts}"):
+                    # Get appropriate timeout for scraping operations
+                    timeout_tuple = self.timeout_manager.get_http_timeout("scraping")
+                    response = self.session.get(
+                        url,
+                        headers=headers,
+                        timeout=timeout_tuple,
+                        allow_redirects=True
+                    )
                 
                 # Calculate fetch time
                 fetch_time_ms = int((time.time() - start_time) * 1000)
+                attempt_time_ms = int((time.time() - attempt_start) * 1000)
+                
+                logger.log_http_request(
+                    method="GET",
+                    url=response.url,
+                    status_code=response.status_code,
+                    duration_ms=attempt_time_ms,
+                    success=response.status_code == 200,
+                    attempt=attempts,
+                    redirected=response.url != url
+                )
                 
                 # Check if request was successful
                 if response.status_code == 200:
+                    content_length = len(response.text)
+                    logger.info(
+                        "HTTP fetch completed successfully",
+                        url=response.url,
+                        status_code=response.status_code,
+                        content_length=content_length,
+                        encoding=response.encoding,
+                        attempts=attempts,
+                        total_time_ms=fetch_time_ms
+                    )
+                    
                     return FetchResult(
                         url=response.url,  # Final URL after redirects
                         content=response.text,
@@ -199,23 +242,78 @@ class HTTPFetcher:
                 else:
                     last_error = f"HTTP {response.status_code}: {response.reason}"
                 
+                logger.warning(
+                    "HTTP request failed",
+                    url=url,
+                    status_code=response.status_code,
+                    error=last_error,
+                    attempt=attempts,
+                    will_retry=attempt < self.max_retries and not (400 <= response.status_code < 500 and response.status_code != 429)
+                )
+                
                 # For client errors (4xx), don't retry
                 if 400 <= response.status_code < 500 and response.status_code != 429:
                     break
                     
             except requests.exceptions.Timeout:
-                last_error = f"Request timeout after {self.timeout} seconds"
-            except requests.exceptions.ConnectionError:
+                timeout_config = self.timeout_manager.get_http_timeout("scraping")
+                last_error = f"Request timeout after {timeout_config[0]}s connect, {timeout_config[1]}s read"
+                logger.warning(
+                    "HTTP request timed out",
+                    url=url,
+                    connect_timeout=timeout_config[0],
+                    read_timeout=timeout_config[1],
+                    attempt=attempts,
+                    will_retry=attempt < self.max_retries
+                )
+            except requests.exceptions.ConnectionError as e:
                 last_error = "Connection error - unable to reach server"
+                logger.warning(
+                    "HTTP connection error",
+                    url=url,
+                    error=str(e),
+                    attempt=attempts,
+                    will_retry=attempt < self.max_retries
+                )
             except requests.exceptions.TooManyRedirects:
                 last_error = "Too many redirects"
+                logger.warning(
+                    "Too many redirects",
+                    url=url,
+                    attempt=attempts,
+                    will_retry=False  # Don't retry redirect loops
+                )
+                break
             except requests.exceptions.RequestException as e:
                 last_error = f"Request failed: {str(e)}"
+                logger.warning(
+                    "HTTP request exception",
+                    url=url,
+                    error=str(e),
+                    error_type=type(e).__name__,
+                    attempt=attempts,
+                    will_retry=attempt < self.max_retries
+                )
             except Exception as e:
                 last_error = f"Unexpected error: {str(e)}"
+                logger.error(
+                    "Unexpected HTTP error",
+                    url=url,
+                    error=e,
+                    attempt=attempts,
+                    will_retry=attempt < self.max_retries
+                )
         
         # All attempts failed
         fetch_time_ms = int((time.time() - start_time) * 1000)
+        
+        logger.error(
+            "HTTP fetch failed after all attempts",
+            url=url,
+            attempts=attempts,
+            total_time_ms=fetch_time_ms,
+            final_error=last_error
+        )
         
         return FetchResult(
             url=url,

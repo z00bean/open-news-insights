@@ -1,0 +1,14 @@
+{
+  "Parameters": {
+    "Environment": "dev",
+    "LogRetentionDays": 7,
+    "ExternalApiUrl": "",
+    "ExternalApiKey": ""
+  },
+  "Tags": {
+    "Environment": "dev",
+    "Project": "open-news-insights",
+    "Owner": "development-team",
+    "CostCenter": "engineering"
+  }
+}

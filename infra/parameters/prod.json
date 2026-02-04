@@ -1,0 +1,14 @@
+{
+  "Parameters": {
+    "Environment": "prod",
+    "LogRetentionDays": 30,
+    "ExternalApiUrl": "",
+    "ExternalApiKey": ""
+  },
+  "Tags": {
+    "Environment": "prod",
+    "Project": "open-news-insights",
+    "Owner": "platform-team",
+    "CostCenter": "production"
+  }
+}

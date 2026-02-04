@@ -1,0 +1,14 @@
+{
+  "Parameters": {
+    "Environment": "staging",
+    "LogRetentionDays": 14,
+    "ExternalApiUrl": "",
+    "ExternalApiKey": ""
+  },
+  "Tags": {
+    "Environment": "staging",
+    "Project": "open-news-insights",
+    "Owner": "qa-team",
+    "CostCenter": "engineering"
+  }
+}

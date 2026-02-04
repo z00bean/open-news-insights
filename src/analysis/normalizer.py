@@ -17,6 +17,7 @@ from botocore.exceptions import ClientError, BotoCoreError
 from botocore.config import Config
 
 from ..config.models import AWSSettings
+from ..config.timeouts import get_timeout_manager
 from .error_handler import (
     RetryConfig, BedrockError, BedrockTimeoutError,
     BedrockServiceError, classify_bedrock_error
@@ -61,6 +62,7 @@ class LLMNormalizer:
             aws_settings: AWS configuration settings
         """
         self.aws_settings = aws_settings
+        self.timeout_manager = get_timeout_manager()
         self._bedrock_client = None
         self.retry_config = RetryConfig(
             max_retries=aws_settings.max_retries,
@@ -72,12 +74,15 @@ class LLMNormalizer:
     def bedrock_client(self):
         """Lazy initialization of Bedrock client with timeout configuration."""
         if self._bedrock_client is None:
+            # Get timeout configuration for Bedrock service
+            timeout_config = self.timeout_manager.get_aws_timeout("bedrock")
+            
             # Configure client with timeout settings
             config = Config(
                 region_name=self.aws_settings.region,
                 retries={'max_attempts': 0},  # We handle retries manually
-                read_timeout=self.aws_settings.timeout_seconds,
-                connect_timeout=10
+                read_timeout=timeout_config['read_timeout'],
+                connect_timeout=timeout_config['connect_timeout']
             )
             
             self._bedrock_client = boto3.client(
